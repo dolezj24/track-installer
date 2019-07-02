@@ -1,4 +1,4 @@
-[723M_crisp_clear]
+[705M_crisp_clear]
 AmbientBlue = 0.520000
 AmbientGreen = 0.500000
 AmbientRed = 0.500000
@@ -42,7 +42,7 @@ Terrain_Reflectance_Red = 0.340000
 Turbidity = 1.000000
 UseFog = false
 
-[723M_hazy_clear]
+[705M_hazy_clear]
 AmbientBlue = 0.520000
 AmbientGreen = 0.500000
 AmbientRed = 0.500000
@@ -86,7 +86,7 @@ Terrain_Reflectance_Red = 0.340000
 Turbidity = 1.000000
 UseFog = true
 
-[723O_M_norain_heavycloud]
+[705O_M_norain_heavycloud]
 AmbientBlue = 0.520000
 AmbientGreen = 0.500000
 AmbientRed = 0.500000
@@ -131,7 +131,7 @@ Terrain_Reflectance_Red = 0.340000
 Turbidity = 1.000000
 UseFog = false
 
-[723O_M_lightrain_heavycloud]
+[705O_M_lightrain_heavycloud]
 Specular_Glossiness=4.000000
 AmbientBlue=0.520000
 FogBlue=0.790000
@@ -175,7 +175,7 @@ Rayleigh_Multiplier=0.370630
 Turbidity=1.000000
 DiffuseRed=0.510000
 
-[723O_M_heavyfog_heavycloud] 
+[705O_M_heavyfog_heavycloud] 
 AmbientBlue = 0.580000
 AmbientGreen = 0.500000
 AmbientRed = 0.500000
@@ -219,7 +219,7 @@ Terrain_Reflectance_Red = 0.260000
 Turbidity = 6.200000
 UseFog = true
 
-[723O_M_heavyrain_heavycloud]
+[705O_M_heavyrain_heavycloud]
 Specular_Glossiness=4.000000
 AmbientBlue=0.520000
 FogBlue=0.720000
@@ -264,7 +264,7 @@ Rayleigh_Multiplier=0.860140
 Turbidity=1.000000
 DiffuseRed=0.490000
 
-[723O_M_hazy_heavycloud]
+[705O_M_hazy_heavycloud]
 AmbientBlue=0.810000
 AmbientRed=0.450000
 AmbientGreen=0.550000
@@ -309,7 +309,7 @@ Terrain_Reflectance_Green=0.450000
 Turbidity=0.000000
 UseFog=true
 
-[723E_hazy_heavycloud]
+[705E_hazy_heavycloud]
 AmbientBlue=0.810000
 AmbientRed=0.450000
 AmbientGreen=0.550000
@@ -354,7 +354,7 @@ Terrain_Reflectance_Green=0.450000
 Turbidity=0.000000
 UseFog=true
 
-[723E_heavyfog_heavycloud] 
+[705E_heavyfog_heavycloud] 
 AmbientBlue = 0.580000
 AmbientGreen = 0.500000
 AmbientRed = 0.500000
@@ -399,7 +399,7 @@ Terrain_Reflectance_Red = 0.260000
 Turbidity = 6.200000
 UseFog = true
 
-[723E_norain_lightcloud]
+[705E_norain_lightcloud]
 AmbientBlue=0.520000
 AmbientRed=0.500000
 AmbientGreen=0.500000

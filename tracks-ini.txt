@@ -1,7 +1,0 @@
-[Map705]
-TrackName="Maps\track-705"
-Particles="Maps\PS_Poland"
-StageName="Lousada - RG"
-Surface=1
-Length=3.8
-SplashScreen="Textures\Splash\705-Lousada_RG.dds"

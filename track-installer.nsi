@@ -7,31 +7,38 @@
 !include ".\str-contains.nsh"
 !define StrContains '!insertmacro "un._StrContainsConstructor"'
 
-!define /file TRACKS_INI_CONTENT ".\tracks-ini.txt"
 !define /file TRACKSETTINGS_INI_CONTENT ".\tracksettings-ini.txt"
 
 ;---------Setup part----------------------------
 ; INFORMATION: Define Track name and installer and uninstaller file names in next commands
-!define TRACK_NAME "Track Name"
+!define TRACK_ID "705"
+!define TRACK_NAME "Maps\track-705"
+!define PARTICLES "Maps\PS_Poland"
+!define STAGE_NAME "Lousada - RG"
+!define SURFACE "1"
+!define LENGTH "3.8"
+!define SPLASH_SCREEN "Textures\Splash\705-Lousada_RG.dds"
+
 ; The installer and uninstaller file names
 OutFile "RBRTrackName.exe"
 !define UNINSTALLER "RBRTrackNameUnistaller.exe"
 
 ;--------------------------------------
 ; The name of the installer
-Name "RBR ${TRACK_NAME}"
+Name "RBR ${STAGE_NAME}"
 DirText "Check, whether the correct Richard Burns Rally folder was found." "RBR folder"
 ; Read install dir from register
-InstallDirRegKey  HKLM "SOFTWARE\SCi Games\Richard Burns Rally\InstallPath" ""
+;InstallDirRegKey  HKLM "SOFTWARE\SCi Games\Richard Burns Rally\InstallPath" ""
 ;InstallDir "some-test-rbr-dir"
+InstallDir "D:\Hry\RBR_modifikace\Instalatory\track-installer\test-rbr-dir"
 ; Request application privileges for Windows Vista
 RequestExecutionLevel admin
 
 ;--------------------------------
 ;Interface Settings
 !define MUI_ABORTWARNING
-!define MUI_WELCOMEPAGE_TEXT "You are installing ${TRACK_NAME} for RBR"
-!define MUI_WELCOMEPAGE_TITLE "${TRACK_NAME}"
+!define MUI_WELCOMEPAGE_TEXT "You are installing ${STAGE_NAME} for RBR"
+!define MUI_WELCOMEPAGE_TITLE "${STAGE_NAME}"
 
 ;--------------------------------
 ; Pages install
@@ -52,17 +59,12 @@ Var dummy
 Var trackId
 Var res
 Var file
-Var index
-Var start
-Var line
-Var linelen
 Var track
 Var splashFile
 
 Section "Install"
   SectionIn RO
 
-  Call SetTracksIniLines
   Call SetTrackId
 
   StrCpy $file tracks
@@ -73,9 +75,13 @@ Section "Install"
   FileOpen $4 "$INSTDIR\maps\tracks.ini" a
   FileSeek $4 0 END
   FileWrite $4 "$\r$\n"
-  ${ForEachIn} lines $R0 $R1
-    FileWrite $4 "$R1$\r$\n"
-  ${Next}
+  FileWrite $4 "[Map${TRACK_ID}]$\r$\n"
+  FileWrite $4 `TrackName="${TRACK_NAME}"$\r$\n`
+  FileWrite $4 `Particles="${PARTICLES}"$\r$\n`
+  FileWrite $4 `StageName="${STAGE_NAME}"$\r$\n`
+  FileWrite $4 "Surface=${SURFACE}$\r$\n"
+  FileWrite $4 "Length=${LENGTH}$\r$\n"
+  FileWrite $4 `SplashScreen="${SPLASH_SCREEN}"$\r$\n`
   FileClose $4
 
   SetOutPath $INSTDIR
@@ -85,8 +91,8 @@ Section "Install"
   ${FileJoin} "$INSTDIR\maps\tracksettings.ini" "$INSTDIR\tracksettings-ini.txt" ""
     Delete "$INSTDIR\tracksettings-ini.txt"
 
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RBRTrack${TRACK_NAME}" "DisplayName" "RBR ${TRACK_NAME} uninstall"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RBRTrack${TRACK_NAME}" "UninstallString" '"$INSTDIR\${UNINSTALLER}"'
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RBRTrack${STAGE_NAME}" "DisplayName" "RBR ${STAGE_NAME} uninstall"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RBRTrack${STAGE_NAME}" "UninstallString" '"$INSTDIR\${UNINSTALLER}"'
 
   WriteUninstaller "${UNINSTALLER}"
   
@@ -95,17 +101,9 @@ SectionEnd ; end the install section
 Section "Uninstall"
   nsArray::SetList conditions M N E O /end
 
-  Call un.SetTracksIniLines
   Call un.SetTrackId
 
-  ${ForEachIn} lines $R0 $R1
-    ${StrContains} $0 "SplashScreen" $R1
-    StrCmp $0 "" notfound
-      ${WordFind2X} '$R1' '"' '"' "+1" $splashFile
-      Goto done
-    notfound:
-  ${Next}
-  done:
+  StrCpy $splashFile "${SPLASH_SCREEN}"
 
   ${ForEachIn} conditions $R0 $R1
     StrCpy $track "$INSTDIR\maps\track-$trackId_$R1"
@@ -137,7 +135,7 @@ Section "Uninstall"
   StrCpy $file tracksettings
   Call un.DeleteTrackFromIniFile
 
-  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RBRTrack${TRACK_NAME}"
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RBRTrack${STAGE_NAME}"
 
   Delete "$INSTDIR\${UNINSTALLER}"
 
@@ -184,40 +182,9 @@ SectionEnd ; End uninstall section
 !insertmacro DeleteTrackFromIniFile ""
 !insertmacro DeleteTrackFromIniFile "un."
 
-!macro SetTracksIniLines UN
-  Function ${UN}SetTracksIniLines
-    StrCpy $0 `${TRACKS_INI_CONTENT}`
-    StrCpy $index 0
-    StrCpy $start 0
-    loop:
-      StrCpy $2 $0 1 $index
-      StrCmp $2 '$\n' found
-      IntOp $index $index + 1
-      StrCmp $2 '' stop loop
-    found:
-      IntOp $linelen $index - $start
-      StrCpy $line $0 $linelen $start
-      nsArray::Set lines $line
-      IntOp $index $index + 1
-      StrCpy $start $index
-      Goto loop
-    stop:
-    IntOp $index $index - 1
-    IntOp $linelen $index - $start
-    StrCpy $line $0 $linelen $start
-    StrCmp $line '' +2 0
-      nsArray::Set lines $line
-  FunctionEnd
-!macroend
-
-!insertmacro SetTracksIniLines ""
-!insertmacro SetTracksIniLines "un."
-
 !macro SetTrackId UN
   Function ${UN}SetTrackId
-    nsArray::Get lines 0
-    Pop $R0
-    ${WordFind2X} '$R0' "p" "]" "+1" $trackId
+    StrCpy $trackId "${TRACK_ID}"
   FunctionEnd
 !macroend
 
