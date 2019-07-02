@@ -1,0 +1,7 @@
+Na vytvoøení instalátoru potøebuješ NSIS - https://nsis.sourceforge.io/Download (jestli ještì nemáš nainstalováno). Dál script využívá jednu knihovnu, která není (alespoò ve verzi 3.02.1) souèástí standartní instalace. Download knihovny - https://nsis.sourceforge.io/mediawiki/images/9/97/NsArray.zip . Naistaluješ ji tak, že obsah ze složky Include vložíš do adresáøe Include v instalaci NSIS.
+
+Nastavení scriptu:
+1. Pøímo ve scriptu (track-installer.nsi) je potøeba upravit jen 3 vìci, a to jméno trati a názvi souboru installeru a odinstaller. Øádky 15 až 18.
+2. Do složky track-files vložíš všechny soubory trati ve stejné adresáøové struktuøe jako v instalaci RBR. (viz. složka track-files)
+3. Do souborù tracks-ini.txt a tracksettings-ini.txt vlož informace o trati, které chceš vložit do korespondujících souborù.
+4. Pokud s tratí instaluješ nìjaké neobvylké (mimo bìžné v maps a splashscreen) soubory a chceš, aby je uninstaller smazal, tak je nutné, soubory explicitnì oznaèit ve scriptu v Section "Uninstall" pomocí Delete "$INSTDIR\<cesta k souboru>".

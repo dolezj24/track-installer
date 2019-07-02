@@ -1,0 +1,8 @@
+*.exe
+.idea/
+track-files/*
+test-rbr-dir/maps/*
+test-rbr-dir/textures/*
+test-rbr-dir/*.exe
+!test-rbr-dir/maps/Tracks.ini
+!test-rbr-dir/maps/TrackSettings.ini
