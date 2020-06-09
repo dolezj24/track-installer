@@ -59,25 +59,14 @@ RequestExecutionLevel admin
 Var track
 Var splashFile
 Var found
-Var file
-Var end
+Var dummy
 
 !define /file TRACKSETTINGS_INI_CONTENT ".\tracksettings-ini.txt"
 
 Section "Install"
   SectionIn RO
 
-  StrCpy $file "tracks.ini"
-  StrCpy $found 1
-  ${While} $found == 1
-    DeleteINISec "$INSTDIR\Maps\Tracks.ini" "Map${TRACK_ID}"
-    Call FindTrackInIniFile
-  ${EndWhile}
-
-  nsArray::SetList tracksettingsConditions ${TRACKSETTINGS_CONDITION_HEADERS} /end
-  ${ForEachIn} tracksettingsConditions $R0 $R1
-    DeleteINISec "$INSTDIR\Maps\tracksettings.ini" "$R1"
-  ${Next}
+  Call RemoveTrackFromIniFiles
 
   FileOpen $4 "$INSTDIR\Maps\Tracks.ini" a
   FileSeek $4 0 END
@@ -135,17 +124,7 @@ Section "Uninstall"
   IfFileExists "$INSTDIR\$splashFile" 0 +2
     Delete "$INSTDIR\$splashFile"
 
-  StrCpy $file "tracks.ini"
-  StrCpy $found 1
-  ${While} $found == 1
-    DeleteINISec "$INSTDIR\Maps\Tracks.ini" "Map${TRACK_ID}"
-    Call un.FindTrackInIniFile
-  ${EndWhile}
-
-  nsArray::SetList tracksettingsConditions ${TRACKSETTINGS_CONDITION_HEADERS} /end
-  ${ForEachIn} tracksettingsConditions $R0 $R1
-    DeleteINISec "$INSTDIR\Maps\tracksettings.ini" "$R1"
-  ${Next}
+  Call un.RemoveTrackFromIniFiles
 
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RBRTrack${STAGE_NAME}"
 
@@ -153,27 +132,31 @@ Section "Uninstall"
 
 SectionEnd ; End uninstall section
 
-!macro GrepFunc UN
-  Function ${UN}GrepFunc
-    ${TrimNewLines} '$R9' $R9
-    ${WordFind3X} '$R9' "[" $trackId "]" "E+1" $res
-    IfErrors notFound 0
+!macro RemoveTrackFromIniFiles UN
+  Function ${UN}RemoveTrackFromIniFiles
+    StrCpy $found 1
+    ${While} $found == 1
+      DeleteINISec "$INSTDIR\Maps\Tracks.ini" "Map${TRACK_ID}"
+      ReadINIStr $dummy "$INSTDIR\Maps\Tracks.ini" "Map${TRACK_ID}" "TrackName"
+      IfErrors 0 +2
+        StrCpy $found 0
+    ${EndWhile}
+
+    nsArray::SetList tracksettingsConditions ${TRACKSETTINGS_CONDITION_HEADERS} /end
       StrCpy $found 1
-      StrCpy $0 "StopLineFind"
-    notFound:
-    Push $0
+      ${While} $found == 1
+        StrCpy $found 0
+        ${ForEachIn} tracksettingsConditions $R0 $R1
+          DeleteINISec "$INSTDIR\Maps\tracksettings.ini" "$R1"
+          ReadINIStr $dummy "$INSTDIR\Maps\tracksettings.ini" "$R1" "AmbientBlue"
+          IfErrors +2 0
+            StrCpy $found 1
+        ${Next}
+      ${EndWhile}
   FunctionEnd
 !macroend
 
-!insertmacro GrepFunc ""
-!insertmacro GrepFunc "un."
+!insertmacro RemoveTrackFromIniFiles ""
+!insertmacro RemoveTrackFromIniFiles "un."
 
-!macro FindTrackInIniFile UN
-  Function ${UN}DeleteTrackFromIniFile
-    StrCpy $found 0
-    ${LineFind} "$INSTDIR\maps\$file.ini" /NUL "1:-1" "${UN}GrepFunc"
-  FunctionEnd
-!macroend
 
-!insertmacro DeleteTrackFromIniFile ""
-!insertmacro DeleteTrackFromIniFile "un."
