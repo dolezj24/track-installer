@@ -3,14 +3,12 @@
 !include "MUI2.nsh"
 !include "textfunc.nsh"
 !include "WordFunc.nsh"
-
-!include ".\str-contains.nsh"
-!define StrContains '!insertmacro "un._StrContainsConstructor"'
-
-!define /file TRACKSETTINGS_INI_CONTENT ".\tracksettings-ini.txt"
+Unicode True
+#!include ".\str-contains.nsh"
+#!define StrContains '!insertmacro "un._StrContainsConstructor"'
 
 ;---------Setup part----------------------------
-; INFORMATION: Define Track name and installer and uninstaller file names in next commands
+; INFORMATION: Define Tracks.ini info and installer and uninstaller file names in next commands
 !define TRACK_ID "705"
 !define TRACK_NAME "Maps\track-705"
 !define PARTICLES "Maps\PS_Poland"
@@ -22,6 +20,10 @@
 ; The installer and uninstaller file names
 OutFile "RBRTrackName.exe"
 !define UNINSTALLER "RBRTrackNameUnistaller.exe"
+
+; Define conditions in tracksettings.ini
+!define TRACKSETTINGS_CONDITION_HEADERS "705M_crisp_clear 705M_hazy_clear 705O_M_norain_heavycloud 705O_M_lightrain_heavycloud 705O_M_heavyfog_heavycloud \
+  705O_M_heavyrain_heavycloud 705O_M_hazy_heavycloud 705E_hazy_heavycloud 705E_heavyfog_heavycloud 705E_norain_lightcloud"
 
 ;--------------------------------------
 ; The name of the installer
@@ -54,25 +56,21 @@ RequestExecutionLevel admin
 
 ;--------------------------------
 ; Variables can be only global, so they are initialized here together
-Var found
-Var dummy
-Var trackId
-Var res
-Var file
 Var track
 Var splashFile
+
+!define /file TRACKSETTINGS_INI_CONTENT ".\tracksettings-ini.txt"
 
 Section "Install"
   SectionIn RO
 
-  Call SetTrackId
+  DeleteINISec "$INSTDIR\Maps\Tracks.ini" "Map${TRACK_ID}"
+  nsArray::SetList tracksettingsConditions ${TRACKSETTINGS_CONDITION_HEADERS} /end
+  ${ForEachIn} tracksettingsConditions $R0 $R1
+    DeleteINISec "$INSTDIR\Maps\tracksettings.ini" "$R1"
+  ${Next}
 
-  StrCpy $file tracks
-  Call DeleteTrackFromIniFile
-  StrCpy $file tracksettings
-  Call DeleteTrackFromIniFile
-
-  FileOpen $4 "$INSTDIR\maps\tracks.ini" a
+  FileOpen $4 "$INSTDIR\Maps\Tracks.ini" a
   FileSeek $4 0 END
   FileWrite $4 "$\r$\n"
   FileWrite $4 "[Map${TRACK_ID}]$\r$\n"
@@ -101,12 +99,10 @@ SectionEnd ; end the install section
 Section "Uninstall"
   nsArray::SetList conditions M N E O /end
 
-  Call un.SetTrackId
-
   StrCpy $splashFile "${SPLASH_SCREEN}"
 
   ${ForEachIn} conditions $R0 $R1
-    StrCpy $track "$INSTDIR\maps\track-$trackId_$R1"
+    StrCpy $track "$INSTDIR\maps\track-${TRACK_ID}_$R1"
     IfFileExists "$track_textures.rbz" 0 +2
       Delete "$track_textures.rbz"
     IfFileExists "$track_textures" 0 +2
@@ -130,64 +126,14 @@ Section "Uninstall"
   IfFileExists "$INSTDIR\$splashFile" 0 +2
     Delete "$INSTDIR\$splashFile"
 
-  StrCpy $file tracks
-  Call un.DeleteTrackFromIniFile
-  StrCpy $file tracksettings
-  Call un.DeleteTrackFromIniFile
+  DeleteINISec "$INSTDIR\Maps\Tracks.ini" "Map${TRACK_ID}"
+  nsArray::SetList tracksettingsConditions ${TRACKSETTINGS_CONDITION_HEADERS} /end
+  ${ForEachIn} tracksettingsConditions $R0 $R1
+    DeleteINISec "$INSTDIR\Maps\tracksettings.ini" "$R1"
+  ${Next}
 
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RBRTrack${STAGE_NAME}"
 
   Delete "$INSTDIR\${UNINSTALLER}"
 
 SectionEnd ; End uninstall section
-
-!macro GrepFunc UN
-  Function ${UN}GrepFunc
-    ${TrimNewLines} '$R9' $R9
-    ${WordFind3X} '$R9' "[" $trackId "]" "E+1" $res
-    IfErrors startNotFound 0
-      StrCpy $found 1
-      StrCpy $0 SkipWrite
-      Goto grepEnd
-    startNotFound:
-    ${WordFind2X} '$R9' "[" "]" "E+1" $dummy
-    IfErrors 0 setFlagFalse
-      ${if} $found == 1
-        StrCpy $0 SkipWrite
-        Goto grepEnd
-      ${else}
-        Goto grepEnd
-      ${endIf}
-
-    setFlagFalse:
-    StrCpy $found 0
-    grepEnd:
-    StrCpy $R9 '$R9$\r$\n'
-    Push $0
-  FunctionEnd
-!macroend
-
-!insertmacro GrepFunc ""
-!insertmacro GrepFunc "un."
-
-!macro DeleteTrackFromIniFile UN
-  Function ${UN}DeleteTrackFromIniFile
-    StrCpy $found 0
-    ${LineFind} "$INSTDIR\maps\$file.ini" "C:\$file-temp.ini" "1:-1" "${UN}GrepFunc"
-    CopyFiles /SILENT "C:\$file-temp.ini" "$INSTDIR\maps\$file.ini"
-    Delete "C:\$file-temp.ini"
-  FunctionEnd
-!macroend
-
-!insertmacro DeleteTrackFromIniFile ""
-!insertmacro DeleteTrackFromIniFile "un."
-
-!macro SetTrackId UN
-  Function ${UN}SetTrackId
-    StrCpy $trackId "${TRACK_ID}"
-  FunctionEnd
-!macroend
-
-!insertmacro SetTrackId ""
-!insertmacro SetTrackId "un."
-
