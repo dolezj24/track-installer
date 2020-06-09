@@ -58,13 +58,22 @@ RequestExecutionLevel admin
 ; Variables can be only global, so they are initialized here together
 Var track
 Var splashFile
+Var found
+Var file
+Var end
 
 !define /file TRACKSETTINGS_INI_CONTENT ".\tracksettings-ini.txt"
 
 Section "Install"
   SectionIn RO
 
-  DeleteINISec "$INSTDIR\Maps\Tracks.ini" "Map${TRACK_ID}"
+  StrCpy $file "tracks.ini"
+  StrCpy $found 1
+  ${While} $found == 1
+    DeleteINISec "$INSTDIR\Maps\Tracks.ini" "Map${TRACK_ID}"
+    Call FindTrackInIniFile
+  ${EndWhile}
+
   nsArray::SetList tracksettingsConditions ${TRACKSETTINGS_CONDITION_HEADERS} /end
   ${ForEachIn} tracksettingsConditions $R0 $R1
     DeleteINISec "$INSTDIR\Maps\tracksettings.ini" "$R1"
@@ -126,7 +135,13 @@ Section "Uninstall"
   IfFileExists "$INSTDIR\$splashFile" 0 +2
     Delete "$INSTDIR\$splashFile"
 
-  DeleteINISec "$INSTDIR\Maps\Tracks.ini" "Map${TRACK_ID}"
+  StrCpy $file "tracks.ini"
+  StrCpy $found 1
+  ${While} $found == 1
+    DeleteINISec "$INSTDIR\Maps\Tracks.ini" "Map${TRACK_ID}"
+    Call un.FindTrackInIniFile
+  ${EndWhile}
+
   nsArray::SetList tracksettingsConditions ${TRACKSETTINGS_CONDITION_HEADERS} /end
   ${ForEachIn} tracksettingsConditions $R0 $R1
     DeleteINISec "$INSTDIR\Maps\tracksettings.ini" "$R1"
@@ -137,3 +152,28 @@ Section "Uninstall"
   Delete "$INSTDIR\${UNINSTALLER}"
 
 SectionEnd ; End uninstall section
+
+!macro GrepFunc UN
+  Function ${UN}GrepFunc
+    ${TrimNewLines} '$R9' $R9
+    ${WordFind3X} '$R9' "[" $trackId "]" "E+1" $res
+    IfErrors notFound 0
+      StrCpy $found 1
+      StrCpy $0 "StopLineFind"
+    notFound:
+    Push $0
+  FunctionEnd
+!macroend
+
+!insertmacro GrepFunc ""
+!insertmacro GrepFunc "un."
+
+!macro FindTrackInIniFile UN
+  Function ${UN}DeleteTrackFromIniFile
+    StrCpy $found 0
+    ${LineFind} "$INSTDIR\maps\$file.ini" /NUL "1:-1" "${UN}GrepFunc"
+  FunctionEnd
+!macroend
+
+!insertmacro DeleteTrackFromIniFile ""
+!insertmacro DeleteTrackFromIniFile "un."
