@@ -4,8 +4,6 @@
 !include "textfunc.nsh"
 !include "WordFunc.nsh"
 Unicode True
-#!include ".\str-contains.nsh"
-#!define StrContains '!insertmacro "un._StrContainsConstructor"'
 
 ;---------Setup part----------------------------
 ; INFORMATION: Define Tracks.ini info and installer and uninstaller file names in next commands
@@ -30,9 +28,8 @@ OutFile "RBRTrackName.exe"
 Name "RBR ${STAGE_NAME}"
 DirText "Check, whether the correct Richard Burns Rally folder was found." "RBR folder"
 ; Read install dir from register
-;InstallDirRegKey  HKLM "SOFTWARE\SCi Games\Richard Burns Rally\InstallPath" ""
+InstallDirRegKey  HKLM "SOFTWARE\SCi Games\Richard Burns Rally\InstallPath" ""
 ;InstallDir "some-test-rbr-dir"
-InstallDir "D:\Hry\RBR_modifikace\Instalatory\track-installer\test-rbr-dir"
 ; Request application privileges for Windows Vista
 RequestExecutionLevel admin
 
@@ -158,5 +155,3 @@ SectionEnd ; End uninstall section
 
 !insertmacro RemoveTrackFromIniFiles ""
 !insertmacro RemoveTrackFromIniFiles "un."
-
-

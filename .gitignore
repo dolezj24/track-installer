@@ -1,6 +1,7 @@
 *.exe
 .idea/
-track-files/*
+track-files/maps/track-705_M.dls
+track-files/maps/track-705_M.trk
 test-rbr-dir/maps/*
 test-rbr-dir/textures/*
 test-rbr-dir/*.exe
