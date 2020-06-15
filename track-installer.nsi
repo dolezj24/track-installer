@@ -131,6 +131,8 @@ SectionEnd ; End uninstall section
 
 !macro RemoveTrackFromIniFiles UN
   Function ${UN}RemoveTrackFromIniFiles
+    SetFileAttributes "$INSTDIR\Maps\Tracks.ini" NORMAL
+    SetFileAttributes "$INSTDIR\Maps\Tracksettings.ini" NORMAL
     StrCpy $found 1
     ${While} $found == 1
       DeleteINISec "$INSTDIR\Maps\Tracks.ini" "Map${TRACK_ID}"
